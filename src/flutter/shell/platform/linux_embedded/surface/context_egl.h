@@ -40,6 +40,7 @@ class ContextEgl {
   EGLConfig config_;
   EGLContext context_;
   EGLContext resource_context_;
+  EGLContext external_context_;
   bool valid_;
 };
 

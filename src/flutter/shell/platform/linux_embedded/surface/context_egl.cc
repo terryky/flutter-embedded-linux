@@ -7,6 +7,9 @@
 #include "flutter/shell/platform/linux_embedded/logger.h"
 #include "flutter/shell/platform/linux_embedded/surface/egl_utils.h"
 
+#define EXTEND_FUNCS_IMPLEMENTATION
+#include "gl_extend_funcs.h"
+
 namespace flutter {
 
 ContextEgl::ContextEgl(std::unique_ptr<EnvironmentEgl> environment,
@@ -55,6 +58,14 @@ ContextEgl::ContextEgl(std::unique_ptr<EnvironmentEgl> environment,
                          << get_egl_error_cause();
       return;
     }
+
+    external_context_ =
+        eglCreateContext(environment_->Display(), config_, EGL_NO_CONTEXT, attribs);
+    if (external_context_ == EGL_NO_CONTEXT) {
+      LINUXES_LOG(ERROR) << "Failed to create an external context: "
+                         << get_egl_error_cause();
+      return;
+    }
   }
 
   valid_ = true;
@@ -70,7 +81,7 @@ std::unique_ptr<LinuxesEGLSurface> ContextEgl::CreateOnscreenSurface(
                        << get_egl_error_cause();
   }
   return std::make_unique<LinuxesEGLSurface>(surface, environment_->Display(),
-                                             context_);
+                                             context_, external_context_);
 }
 
 std::unique_ptr<LinuxesEGLSurface> ContextEgl::CreateOffscreenSurface(
